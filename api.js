@@ -1,5 +1,5 @@
 /* api.js */
-const API_URL = "ここにデプロイしたWebアプリURLを入力";
+const API_URL = "https://script.google.com/macros/s/AKfycbwoso8Ggy5njTRqEpQdozOmh0oFcc7BFl7PuAqM1YJfqOXFemSHwI9nDjBkwEkANgK9XA/exec";
 
 function api(action, params = {}) {
   return new Promise((resolve, reject) => {
