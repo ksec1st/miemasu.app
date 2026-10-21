@@ -64,4 +64,4 @@ async function loadDashboard() {
 }
 
 loadDashboard();
-setInterval(loadDashboard, 30000);
+setInterval(loadDashboard, 15000);
