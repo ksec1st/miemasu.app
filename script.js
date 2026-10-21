@@ -32,38 +32,56 @@ function enableSound() {
   }
 }
 
+// 呼び出し音：「ピロロン♪」
 function playCallSound() {
-  if (!soundEnabled || !audioContext) return;
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
 
-  try {
-    if (audioContext.state === "suspended") {
-      audioContext.resume();
-    }
+  if (!AudioContextClass) return;
 
-    const now = audioContext.currentTime;
-
-    // 聞き取りやすい短い2音チャイム
-    [880, 1175].forEach((frequency, index) => {
-      const oscillator = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      const start = now + index * 0.22;
-
-      oscillator.type = "sine";
-      oscillator.frequency.value = frequency;
-
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.22, start + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.20);
-
-      oscillator.connect(gain);
-      gain.connect(audioContext.destination);
-
-      oscillator.start(start);
-      oscillator.stop(start + 0.22);
-    });
-  } catch (error) {
-    console.warn("チャイム音を再生できませんでした", error);
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
   }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  const now = audioContext.currentTime;
+
+  // ピ・ロ・ロン♪（少し柔らかい電子チャイム）
+  const notes = [
+    { frequency: 784, start: 0, duration: 0.18 },
+    { frequency: 988, start: 0.16, duration: 0.22 },
+    { frequency: 1175, start: 0.34, duration: 0.42 }
+  ];
+
+  notes.forEach((note) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(
+      note.frequency,
+      now + note.start
+    );
+
+    gain.gain.setValueAtTime(0.001, now + note.start);
+    gain.gain.linearRampToValueAtTime(
+      0.22,
+      now + note.start + 0.025
+    );
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      now + note.start + note.duration
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now + note.start);
+    oscillator.stop(now + note.start + note.duration + 0.02);
+  });
 }
 
 function renderCalls(calledTickets, closed) {
