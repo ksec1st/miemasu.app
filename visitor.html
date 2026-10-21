@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>相談状況確認｜京都翔英高校 OC</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <div class="brand">個別相談｜順番確認</div>
+      <div class="header-sub">YOUR CONSULTATION STATUS</div>
+    </div>
+    <nav>
+      <a href="index.html">案内画面</a>
+      <a href="visitor.html">番号確認</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>あなたの相談状況</h1>
+    <p class="muted">受付番号を選択して、現在の待ち状況をご確認ください。</p>
+
+    <section class="card">
+      <div class="form-row">
+        <label for="ticketSelect">受付番号</label>
+        <select id="ticketSelect">
+          <option value="">受付番号を選択してください</option>
+        </select>
+      </div>
+      <button class="btn" id="refreshBtn" type="button">状況を更新する</button>
+      <div id="message" class="message" role="status"></div>
+    </section>
+
+    <section class="card visitor-result" id="result" hidden>
+      <div class="muted">あなたの受付番号</div>
+      <div class="big-ticket" id="ticket"></div>
+      <span class="pill" id="status"></span>
+      <div class="big-status" id="statusMessage"></div>
+      <hr class="divider">
+      <div class="muted">相談開始予定時刻</div>
+      <div class="time-display" id="startTime"></div>
+      <p class="muted small" id="boothText"></p>
+      <p class="muted small">※開始予定時刻は、相談の進行状況により前後する場合があります。</p>
+    </section>
+  </main>
+
+  <script src="api.js"></script>
+  <script src="visitor.js"></script>
+</body>
+</html>
