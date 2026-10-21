@@ -168,4 +168,4 @@ document.getElementById("enableSoundBtn")
 // 初回取得時に、すでに呼び出し中の番号があっても
 // 過去の呼び出し音を鳴らさない
 loadDashboard();
-setInterval(loadDashboard, 15000);
+setInterval(loadDashboard, 10000);
