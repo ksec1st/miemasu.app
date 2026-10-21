@@ -1,3 +1,4 @@
+
 let adminPin = "";
 
 const loginCard = document.getElementById("loginCard");
@@ -18,15 +19,11 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     return;
   }
 
-  adminPin = candidate;
   try {
-    // 認証確認を兼ねて、保護された操作を実行せずに
-    // PINの有効性をサーバー側で確認する
-    await adminAction("setBooth", {
-      booth: "A",
-      status: "準備中"
-    });
+    // 認証専用の処理。ブースの状態は変更しない
+    await api("login", { pin: candidate });
 
+    adminPin = candidate;
     loginCard.hidden = true;
     adminPanel.hidden = false;
     await loadAdmin();
@@ -42,7 +39,17 @@ async function loadAdmin() {
     const data = await api("status");
     renderBooths(data);
     renderTickets(data);
-    adminMessage.textContent = "最新情報を取得しました。";
+
+    const closed = data.settings?.本日終了 === "true";
+    document.getElementById("registerBtn").disabled = closed;
+
+    document.getElementById("closeDayBtn").disabled = closed;
+    document.getElementById("closeDayBtn").textContent =
+      closed ? "本日の個別相談は終了済み" : "本日の個別相談を終了";
+
+    adminMessage.textContent = closed
+      ? "本日の個別相談は終了しています。"
+      : "最新情報を取得しました。";
     adminMessage.className = "message success";
   } catch (error) {
     adminMessage.textContent = error.message;
@@ -53,8 +60,8 @@ async function loadAdmin() {
 function renderBooths(data) {
   document.getElementById("adminBooths").innerHTML =
     data.booths.map(b => {
-      const current = data.tickets.find(t =>
-        t.ticket === b.currentTicket &&
+      const active = data.tickets.filter(t =>
+        t.booth === b.booth &&
         ["呼出中", "相談中"].includes(t.status)
       );
 
@@ -69,10 +76,17 @@ function renderBooths(data) {
               ).join("")}
             </select>
           </div>
-          <div class="muted small">現在番号：${escapeHTML(current?.ticket || "なし")}</div>
+          <div class="muted small">
+            呼び出し・相談中：${active.length
+              ? active.map(t => escapeHTML(t.ticket)).join("・")
+              : "なし"}
+          </div>
           <div class="actions">
             <button class="btn secondary" data-set="${b.booth}">状態を保存</button>
-            <button class="btn" data-call="${b.booth}">次を呼び出す</button>
+            <button class="btn" data-call="${b.booth}"
+              ${data.settings?.本日終了 === "true" ? "disabled" : ""}>
+              次を呼び出す
+            </button>
           </div>
         </div>`;
     }).join("");
@@ -87,9 +101,10 @@ function renderBooths(data) {
 
   document.querySelectorAll("[data-call]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      const booth = btn.dataset.call;
       await runAction(async () => {
-        const result = await adminAction("callNext", { booth });
+        const result = await adminAction("callNext", {
+          booth: btn.dataset.call
+        });
         alert(result.ticket + " を呼び出しました！");
         return result;
       });
@@ -107,21 +122,33 @@ function renderTickets(data) {
       <td><strong>${escapeHTML(t.ticket)}</strong></td>
       <td>${escapeHTML(t.booth)}</td>
       <td>
-        <input type="time" aria-label="${escapeHTML(t.ticket)}の開始予定"
+        <input type="time"
+          aria-label="${escapeHTML(t.ticket)}の開始予定"
           id="time-${escapeHTML(t.ticket)}"
           value="${t.startAt ? formatTime(t.startAt) : ""}">
-        <button class="btn secondary" data-time="${escapeHTML(t.ticket)}">時刻保存</button>
+        <button class="btn secondary" data-time="${escapeHTML(t.ticket)}">
+          時刻保存
+        </button>
       </td>
-      <td><span class="pill status-${escapeHTML(t.status)}">${escapeHTML(t.status)}</span></td>
+      <td>
+        <span class="pill status-${escapeHTML(t.status)}">
+          ${escapeHTML(t.status)}
+        </span>
+      </td>
       <td>
         <div class="actions">
-          ${t.status === "呼出中"
-            ? `<button class="btn success" data-start="${escapeHTML(t.ticket)}">相談開始</button>` : ""}
-          ${["相談中", "呼出中"].includes(t.status)
-            ? `<button class="btn danger" data-finish="${escapeHTML(t.ticket)}">相談終了</button>` : ""}
+          ${t.status === "呼出中" ? `
+            <button class="btn success" data-start="${escapeHTML(t.ticket)}">
+              相談開始
+            </button>` : ""}
+          ${["相談中", "呼出中"].includes(t.status) ? `
+            <button class="btn danger" data-finish="${escapeHTML(t.ticket)}">
+              相談終了
+            </button>` : ""}
         </div>
       </td>
-    </tr>`).join("");
+    </tr>
+  `).join("");
 
   document.querySelectorAll("[data-time]").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -170,6 +197,7 @@ async function runAction(callback) {
 
 document.getElementById("registerBtn").addEventListener("click", async () => {
   const booth = document.getElementById("registerBooth").value;
+
   try {
     const data = await adminAction("register", { booth });
     document.getElementById("registerMessage").textContent =
@@ -186,8 +214,38 @@ document.getElementById("registerBtn").addEventListener("click", async () => {
 document.getElementById("reloadBtn").addEventListener("click", loadAdmin);
 
 document.getElementById("closeDayBtn").addEventListener("click", async () => {
-  if (!confirm("すべてのブースを「本日なし」にしますか？")) return;
+  const confirmed = confirm(
+    "本日の個別相談を終了します。\n" +
+    "新規受付・新しい呼び出しができなくなります。\n" +
+    "相談中または呼び出し中の来客者がいないことを確認してください。\n\n" +
+    "終了してよろしいですか？"
+  );
+
+  if (!confirmed) return;
+
   await runAction(() => adminAction("closeDay"));
+});
+
+document.getElementById("clearTicketsBtn").addEventListener("click", async () => {
+  const confirmed = confirm(
+    "相談予約一覧を削除します。\n" +
+    "この操作で予約データが消去されます。\n" +
+    "相談中・呼び出し中の来客者がいる場合は削除できません。\n\n" +
+    "本当に削除しますか？"
+  );
+
+  if (!confirmed) return;
+
+  const secondConfirmation = prompt(
+    "削除を実行するには「削除」と入力してください。"
+  );
+
+  if (secondConfirmation !== "削除") {
+    alert("削除をキャンセルしました。");
+    return;
+  }
+
+  await runAction(() => adminAction("clearTickets"));
 });
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
