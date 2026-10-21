@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>個別相談状況｜京都翔英高校 OC</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <div class="brand">京都翔英高校｜個別相談案内</div>
+      <div class="header-sub">OPEN CAMPUS · CONSULTATION</div>
+    </div>
+    <nav>
+      <a href="index.html">案内画面</a>
+      <a href="visitor.html">番号確認</a>
+      <a href="admin.html">教員用</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>個別相談状況</h1>
+    <div class="muted small">
+      各ブースの状況をご確認ください。
+      <span id="updatedAt">読み込み中...</span>
+    </div>
+
+    <section class="dashboard">
+      <div class="card">
+        <h2>次の呼び出し</h2>
+        <div class="callout" id="callout">
+          <div class="callout-label">NEXT CONSULTATION</div>
+          <div class="empty-callout">状況を読み込み中...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>各ブースの状況</h2>
+        <div class="booth-grid" id="boothGrid"></div>
+      </div>
+    </section>
+    <div class="footer">京都翔英高校 オープンキャンパス</div>
+  </main>
+
+  <script src="api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
