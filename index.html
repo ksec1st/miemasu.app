@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -28,11 +29,16 @@
 
     <section class="dashboard">
       <div class="card">
-        <h2>次の呼び出し</h2>
-        <div class="callout" id="callout">
-          <div class="callout-label">NEXT CONSULTATION</div>
+        <h2>呼び出し中</h2>
+        <div class="callout" id="callout" aria-live="polite">
+          <div class="callout-label">NOW CALLING</div>
           <div class="empty-callout">状況を読み込み中...</div>
         </div>
+        <p class="muted small">呼び出し時にチャイムが鳴ります。</p>
+        <button class="btn secondary" id="enableSoundBtn" type="button">
+          音声を有効にする
+        </button>
+        <span id="soundMessage" class="muted small"></span>
       </div>
 
       <div class="card">
@@ -40,6 +46,26 @@
         <div class="booth-grid" id="boothGrid"></div>
       </div>
     </section>
+
+    <section class="card" style="margin-top:20px">
+      <h2>来客者用｜受付番号の確認</h2>
+      <p>スマートフォンでQRコードを読み取ると、ご自身の受付番号や相談状況を確認できます。</p>
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&amp;margin=8&amp;data=https%3A%2F%2Fksec1st.github.io%2Fmiemasu.app%2Fvisitor.html"
+          alt="来客者用受付番号確認ページのQRコード"
+          width="180"
+          height="180"
+          style="max-width:100%;height:auto"
+        >
+        <div>
+          <p><strong>受付番号確認ページ</strong></p>
+          <p><a href="visitor.html">番号確認ページを開く</a></p>
+          <p class="muted small">※QRコードの生成には外部サービスを使用しています。</p>
+        </div>
+      </div>
+    </section>
+
     <div class="footer">京都翔英高校 オープンキャンパス</div>
   </main>
 
