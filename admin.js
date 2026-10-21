@@ -199,4 +199,4 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 
 setInterval(() => {
   if (!adminPanel.hidden) loadAdmin();
-}, 30000);
+}, 15000);
